@@ -2,7 +2,9 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import altair as alt
+import seaborn as sns
 import pydeck as pdk
+import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Visualizations Uber data", 
                    page_icon="🚗", 
@@ -38,7 +40,7 @@ st.header('Data visualization')
 st.subheader('1️⃣ Number of passengers, courses and trips per hour')
 tab1, tab3 , tab2 = st.tabs(["📈 Line Chart", "📈 Bar Chart", "🗃 Data"])
 
-tab1.write('Line chart of number of passengers, courses, tips and distance total per hour')
+tab1.write('Line chart of number of passengers, courses, tips and total distance per hour')
 
 passenger_by_hour = data.groupby('hour')['passenger_count'].sum()
 nb_course = data.groupby('hour').size()
@@ -55,7 +57,7 @@ chart_data = pd.DataFrame({
 
 tab1.line_chart(chart_data.set_index('hour'))
 
-tab3.write("Bar chart of number of passengers, courses, tips and distance total per hour")
+tab3.write("Bar chart of number of passengers, courses, tips, total distance per hour")
 
 chart_data = pd.DataFrame({
     'hour': passenger_by_hour.index,
@@ -96,6 +98,64 @@ col1.metric(label='Total distance', value=dist4)
 col2.metric(label='Total tips', value=tips4)
 col3.metric(label='Total number of courses', value=nb_course4)
 col4.metric(label='Total number of passengers', value=passenger4)
+
+# Fare amount distribution by trip distance:
+st.subheader('4️⃣ Fare amount distribution by trip distance')
+tab1, tab2 = st.tabs(["📈 Line Chart", "📈 Bar Chart"
+                      ])
+
+tab1.write('Line chart of fare amount distribution by trip distance')
+chart_data = data.groupby('trip_distance')['fare_amount'].mean().reset_index()
+#utilisation de altair pour nommer les axes
+chart = alt.Chart(chart_data).mark_line().encode(
+    x=alt.X('trip_distance', title='trip distance'),
+    y=alt.Y('fare_amount', title='mean fare amount')
+)
+tab1.altair_chart(chart, use_container_width=True)
+
+tab2.write('Bar chart of fare amount distribution by trip distance')
+tab2.bar_chart(chart_data, x='trip_distance', y='fare_amount')
+
+# Means of fare amount, tip amount and total amount by hour
+st.subheader('5️⃣ Means of fare amount, tip amount and total amount by hour')
+
+tab1, tab2 = st.tabs(["📈 Line Chart", "📈 Bar Chart"
+                      ])
+
+tab1.write('Line chart of means of fare amount, tip amount and total amount by hour')
+chart_data = data.groupby('hour')[['fare_amount', 'tip_amount', 'total_amount']].mean().reset_index()
+chart_data = pd.melt(chart_data, id_vars='hour', value_vars=['fare_amount', 'tip_amount', 'total_amount'], var_name='amount', value_name='mean amount')
+
+chart_data = pd.DataFrame({
+    'fare_amount': data.groupby('hour')['fare_amount'].mean(),
+    'tip_amount': data.groupby('hour')['tip_amount'].mean(),
+    'total_amount': data.groupby('hour')['total_amount'].mean(),
+    'hour': data['hour'].unique()
+})
+
+tab1.line_chart(chart_data.set_index('hour'))
+
+tab2.write('Bar chart of means of fare amount, tip amount and total amount by hour')
+tab2.bar_chart(chart_data, x='hour', y=['fare_amount', 'tip_amount', 'total_amount'])
+
+# Average speed of trips by hour
+st.subheader('6️⃣ Average speed (miles per minute) of trips by hour')
+data['trip_duration'] = (pd.to_datetime(data['tpep_dropoff_datetime']) - pd.to_datetime(data['tpep_pickup_datetime'])).dt.total_seconds() / 60 #miles per minute
+data = data[data['trip_duration'] > 0]
+data['average_speed'] = data['trip_distance'] / data['trip_duration']
+speed_by_hour = data.groupby('hour')['average_speed'].mean().reset_index()
+
+tab1, tab2, tab3 = st.tabs(["📈 Line Chart", "📈 Bar Chart", "🗃 Data"])
+
+tab1.write('Line chart of average speed of trips by hour')
+tab1.line_chart(speed_by_hour.set_index('hour'))
+
+tab2.write('Bar chart of average speed of trips by hour')
+tab2.bar_chart(speed_by_hour, x='hour', y='average_speed')
+
+tab3.write('Data of average speed of trips by hour')
+tab3.write(speed_by_hour)
+
 
 
 # map of the trips pickup and dropoff
