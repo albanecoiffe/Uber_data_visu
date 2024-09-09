@@ -15,7 +15,7 @@ with st.sidebar:
     st.header("Data Science student, master 1 at EFREI")
     st.markdown("Promo: 2026")
 
-    st.write("This is a Streamlit dashboard to explore Uber data from April 2014.")
+    st.write("This is a Streamlit dashboard to explore Uber data from January 2015.")
     st.markdown('📧: albanecoiffe@gmail.com')
     st.markdown('🌐: [LinkedIn]( www.linkedin.com/in/albane-coiffe)')
     st.markdown('🌐: [GitHub](https://github.com/albanecoiffe)')
@@ -23,7 +23,7 @@ with st.sidebar:
 
 st.title('🚗 Visualizations Uber data')
 
-st.header("Uber data from April 2014")
+st.header("Uber data from January 2015")
 
 # Load the data
 path = 'nyc_trips.csv'
